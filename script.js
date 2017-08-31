@@ -56,11 +56,9 @@ $(document).ready(function(){
 		this.SecondCard = null;
 		this.FirstFlipContent = "";
 		this.SecondFlipContent = "";
+		this.matches = 0;
 		this.Flipping = false;
 
-		this.Start = function(){
-
-		}
 		this.ResetTurn = function(){
 			this.TurnCount = 0;
 			this.FirstCard = null;
@@ -68,60 +66,71 @@ $(document).ready(function(){
 			this.FirstFlipContent = "";
 			this.SecondFlipContent = "";
 		}
-	}
-
-	gameBoard = new Board(8);
-	gameBoard.Draw();
-	gameBoard.Randomize();
-
-	game = new Game(gameBoard);
-	game.Start();
-
-
-
-	$('.flip-container').click(function(){
-	if(game.Flipping == false){
-
-		console.log("click");
-		//On second flip 
-		if (game.TurnCount == 1){
-			console.log("flip");
-			game.SecondCard = $(this).children(":first");
-			game.SecondCard.toggleClass("flipped");	
-			game.SecondFlipContent = game.SecondCard.find('.back').html();
-			//If the 2 cards do not match
-			if (game.FirstFlipContent != game.SecondFlipContent){
-				game.Flipping = true;
-				//Flip them back after delay
-				setTimeout(function(){
-					game.FirstCard.toggleClass("flipped");
-					game.SecondCard.toggleClass("flipped");
-					game.ResetTurn();
-					game.Flipping = false;
-				}, 800);						
-			}
-			else{
-				game.Flipping = true;
-				setTimeout(function(){
-					game.FirstCard.parent().off('click');
-					game.SecondCard.parent().off('click');
-					game.ResetTurn();
-					game.Flipping = false;
-				}, 500);
-				
+		this.checkWin = function(){
+			if(this.matches >= (this.Board.Size * this.Board.Size)/2){
+				alert("you win");
 			}
 		}
-
-		//On first flip, flip the card and store the value
-		if (game.TurnCount == 0){
-			game.FirstCard = $(this).children(":first");
-			game.FirstCard.toggleClass("flipped");		
-			game.FirstFlipContent = game.FirstCard.find('.back').html();
-  			game.TurnCount += 1;
-		}
 	}
-  		
+
+	var setup = function(){
+		gameBoard = new Board(8);
+		gameBoard.Draw();
+		gameBoard.Randomize();
+		game = new Game(gameBoard);
+
+		$('.flip-container').click(function(){
+	    	if(game.Flipping == false){
+	    		
+
+				//On second flip 
+				if (game.TurnCount == 1){
+					game.SecondCard = $(this).children(":first");
+					if  (game.FirstCard.attr('id') != game.SecondCard.attr('id')){
+						game.SecondCard.toggleClass("flipped");	
+						game.SecondFlipContent = game.SecondCard.find('.back').html();
+						//If the 2 cards do not match
+						if (game.FirstFlipContent != game.SecondFlipContent){
+							game.Flipping = true;
+							//Flip them back after delay
+							setTimeout(function(){
+								game.FirstCard.toggleClass("flipped");
+								game.SecondCard.toggleClass("flipped");
+								game.ResetTurn();
+								game.Flipping = false;
+							}, 800);					
+						}
+						else {
+							game.Flipping = true;
+							setTimeout(function(){
+								game.FirstCard.parent().off('click');
+								game.SecondCard.parent().off('click');
+								game.ResetTurn();
+								game.Flipping = false;
+								game.matches += 1;
+								game.checkWin();
+							}, 500);			
+						}
+					}
+				}
+
+				//On first flip, flip the card and store the value
+				if (game.TurnCount == 0){
+					game.FirstCard = $(this).children(":first");
+					game.FirstCard.toggleClass("flipped");		
+					game.FirstFlipContent = game.FirstCard.find('.back').html();
+  					game.TurnCount += 1;
+				}
+			}		
+		});
+	}
+
+	$('#reset').click(function(){
+		$('#game').empty();
+		setup();
 	});
+
+	setup();
 
 });
 
